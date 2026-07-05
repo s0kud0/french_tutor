@@ -1,7 +1,8 @@
-# Environment
+# Environment files
 .env
 .env.*
-api/.env*
+**/.env
+**/.env.*
 !.env.example
 
 # Python
