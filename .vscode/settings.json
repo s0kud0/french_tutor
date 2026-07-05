@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "python.defaultInterpreterPath": "/opt/french-tutor/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "./api/app"
+  ],
+  "python.terminal.activateEnvironment": true,
+   "terminal.integrated.env.linux": {
+     "VIRTUAL_ENV": "/opt/french-tutor/.venv",
+     "PATH": "/opt/french-tutor/.venv/bin:${env:PATH}"
+}

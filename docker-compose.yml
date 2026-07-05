@@ -1,3 +1,46 @@
 services:
-  hello:
-    image: hello-world
+
+  db:
+    image: postgres:17
+    container_name: french-tutor-db
+    restart: always
+    environment:
+      POSTGRES_USER: tutor
+      POSTGRES_PASSWORD: tutorpass
+      POSTGRES_DB: tutor
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor -d tutor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: french-tutor-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./api
+    container_name: french-tutor-api
+    env_file:
+      - ./api/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api/app:/app
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
