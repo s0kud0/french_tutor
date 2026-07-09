@@ -5,7 +5,8 @@
 -   [x] FastAPI
 -   [x] Database
 -   [x] OpenAI provider
--   [ ] Persist chat
+-   [x] Persist chat
+-   [x] Tutor prompt and chat service
 
 ## Phase 2
 
