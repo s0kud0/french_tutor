@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import './App.css'
 
 type Role = 'user' | 'assistant'
@@ -15,6 +15,7 @@ type ChatResponse = {
   assistant: ChatMessage
 }
 
+const storedSessionKey = 'frenchTutorSessionId'
 const levelOptions = ['beginner', 'A1', 'A2', 'B1']
 const modeOptions = ['conversation', 'grammar help', 'roleplay']
 
@@ -25,7 +26,45 @@ function App() {
   const [level, setLevel] = useState('beginner')
   const [mode, setMode] = useState('conversation')
   const [isSending, setIsSending] = useState(false)
+  const [isLoadingSession, setIsLoadingSession] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const storedSessionId = window.localStorage.getItem(storedSessionKey)
+
+    if (!storedSessionId) {
+      setIsLoadingSession(false)
+      return
+    }
+
+    const parsedSessionId = Number(storedSessionId)
+    if (!Number.isInteger(parsedSessionId)) {
+      window.localStorage.removeItem(storedSessionKey)
+      setIsLoadingSession(false)
+      return
+    }
+
+    async function loadStoredSession() {
+      try {
+        const response = await fetch(`/messages/${parsedSessionId}`)
+
+        if (!response.ok) {
+          throw new Error('Saved session could not be loaded.')
+        }
+
+        const savedMessages = (await response.json()) as ChatMessage[]
+        setSessionId(parsedSessionId)
+        setMessages(savedMessages)
+      } catch (err) {
+        window.localStorage.removeItem(storedSessionKey)
+        setError(err instanceof Error ? err.message : 'Saved session could not be loaded.')
+      } finally {
+        setIsLoadingSession(false)
+      }
+    }
+
+    loadStoredSession()
+  }, [])
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -67,6 +106,7 @@ function App() {
       const data = (await response.json()) as ChatResponse
 
       setSessionId(data.session_id)
+      window.localStorage.setItem(storedSessionKey, String(data.session_id))
       setMessages((currentMessages) => [
         ...currentMessages,
         data.assistant,
@@ -76,6 +116,14 @@ function App() {
     } finally {
       setIsSending(false)
     }
+  }
+
+  function startNewSession() {
+    window.localStorage.removeItem(storedSessionKey)
+    setSessionId(null)
+    setMessages([])
+    setMessage('')
+    setError('')
   }
 
   return (
@@ -113,11 +161,20 @@ function App() {
             <span>Session</span>
             <strong>{sessionId ?? 'new'}</strong>
           </div>
+
+          <button className="new-session-button" type="button" onClick={startNewSession}>
+            New session
+          </button>
         </aside>
 
         <section className="chat-panel" aria-label="Tutor chat">
           <div className="message-list">
-            {messages.length === 0 ? (
+            {isLoadingSession ? (
+              <div className="empty-state">
+                <h2>Loading session.</h2>
+                <p>Getting your saved conversation back in place.</p>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="empty-state">
                 <h2>Start with a goal.</h2>
                 <p>Try asking to practice ordering coffee, introductions, or travel phrases.</p>

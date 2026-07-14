@@ -73,6 +73,21 @@
   color: #17202a;
 }
 
+.new-session-button {
+  height: 42px;
+  border: 1px solid #cfc6b8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f5f8b;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.new-session-button:hover {
+  border-color: #1f5f8b;
+}
+
 .chat-panel {
   display: grid;
   grid-template-rows: 1fr auto auto;
