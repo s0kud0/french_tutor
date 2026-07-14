@@ -4,7 +4,7 @@ import './App.css'
 type Role = 'user' | 'assistant'
 
 type ChatMessage = {
-  id: number
+  id: number | string
   role: Role
   content: string
 }
@@ -37,6 +37,14 @@ function App() {
 
     setIsSending(true)
     setError('')
+    setMessage('')
+
+    const pendingUserMessage: ChatMessage = {
+      id: `pending-${Date.now()}`,
+      role: 'user',
+      content: trimmedMessage,
+    }
+    setMessages((currentMessages) => [...currentMessages, pendingUserMessage])
 
     try {
       const response = await fetch('/chat', {
@@ -60,11 +68,12 @@ function App() {
 
       setSessionId(data.session_id)
       setMessages((currentMessages) => [
-        ...currentMessages,
+        ...currentMessages.filter(
+          (chatMessage) => chatMessage.id !== pendingUserMessage.id,
+        ),
         data.user,
         data.assistant,
       ])
-      setMessage('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
