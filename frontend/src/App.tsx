@@ -68,10 +68,7 @@ function App() {
 
       setSessionId(data.session_id)
       setMessages((currentMessages) => [
-        ...currentMessages.filter(
-          (chatMessage) => chatMessage.id !== pendingUserMessage.id,
-        ),
-        data.user,
+        ...currentMessages,
         data.assistant,
       ])
     } catch (err) {
