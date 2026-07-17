@@ -8,6 +8,7 @@
 -   [x] Persist chat
 -   [x] Tutor prompt and chat service
 -   [x] Basic tutor chat UI
+-   [x] Session list/sidebar
 
 ## Phase 2
 

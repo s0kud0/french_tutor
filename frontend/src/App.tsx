@@ -15,12 +15,18 @@ type ChatResponse = {
   assistant: ChatMessage
 }
 
+type TutorSession = {
+  id: number
+  created_at: string
+}
+
 const storedSessionKey = 'frenchTutorSessionId'
 const levelOptions = ['beginner', 'A1', 'A2', 'B1']
 const modeOptions = ['conversation', 'grammar help', 'roleplay']
 
 function App() {
   const [sessionId, setSessionId] = useState<number | null>(null)
+  const [sessions, setSessions] = useState<TutorSession[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [message, setMessage] = useState('')
   const [level, setLevel] = useState('beginner')
@@ -65,6 +71,53 @@ function App() {
 
     loadStoredSession()
   }, [])
+
+  useEffect(() => {
+    loadSessions()
+  }, [])
+
+  async function loadSessions() {
+    try {
+      const response = await fetch('/sessions')
+
+      if (!response.ok) {
+        throw new Error('Sessions could not be loaded.')
+      }
+
+      const savedSessions = (await response.json()) as TutorSession[]
+      setSessions(
+        savedSessions.sort(
+          (first, second) =>
+            new Date(second.created_at).getTime() - new Date(first.created_at).getTime(),
+        ),
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sessions could not be loaded.')
+    }
+  }
+
+  async function loadSession(selectedSessionId: number) {
+    setIsLoadingSession(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/messages/${selectedSessionId}`)
+
+      if (!response.ok) {
+        throw new Error('Session could not be loaded.')
+      }
+
+      const savedMessages = (await response.json()) as ChatMessage[]
+      setSessionId(selectedSessionId)
+      setMessages(savedMessages)
+      setMessage('')
+      window.localStorage.setItem(storedSessionKey, String(selectedSessionId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Session could not be loaded.')
+    } finally {
+      setIsLoadingSession(false)
+    }
+  }
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -111,6 +164,7 @@ function App() {
         ...currentMessages,
         data.assistant,
       ])
+      loadSessions()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
@@ -124,6 +178,15 @@ function App() {
     setMessages([])
     setMessage('')
     setError('')
+  }
+
+  function formatSessionDate(createdAt: string) {
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(new Date(createdAt))
   }
 
   return (
@@ -165,6 +228,31 @@ function App() {
           <button className="new-session-button" type="button" onClick={startNewSession}>
             New session
           </button>
+
+          <div className="session-list" aria-label="Saved sessions">
+            <div className="session-list-header">
+              <span>Saved sessions</span>
+              <strong>{sessions.length}</strong>
+            </div>
+
+            {sessions.length === 0 ? (
+              <p className="session-list-empty">No saved sessions yet.</p>
+            ) : (
+              sessions.map((tutorSession) => (
+                <button
+                  className={`session-list-item ${
+                    tutorSession.id === sessionId ? 'active' : ''
+                  }`}
+                  key={tutorSession.id}
+                  type="button"
+                  onClick={() => loadSession(tutorSession.id)}
+                >
+                  <span>Session {tutorSession.id}</span>
+                  <small>{formatSessionDate(tutorSession.created_at)}</small>
+                </button>
+              ))
+            )}
+          </div>
         </aside>
 
         <section className="chat-panel" aria-label="Tutor chat">

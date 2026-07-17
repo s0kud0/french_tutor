@@ -17,6 +17,8 @@
   border-right: 1px solid #ddd6ca;
   background: #fffaf2;
   padding: 32px;
+  min-height: 100svh;
+  box-sizing: border-box;
 }
 
 .eyebrow {
@@ -86,6 +88,59 @@
 
 .new-session-button:hover {
   border-color: #1f5f8b;
+}
+
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.session-list-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #5b6675;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.session-list-empty {
+  margin: 0;
+  color: #647181;
+  font-size: 14px;
+}
+
+.session-list-item {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  border: 1px solid #e1d8cb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17202a;
+  cursor: pointer;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.session-list-item:hover {
+  border-color: #9bb7d1;
+}
+
+.session-list-item.active {
+  border-color: #1f5f8b;
+  background: #eef6ff;
+}
+
+.session-list-item span {
+  font-weight: 800;
+}
+
+.session-list-item small {
+  color: #647181;
+  font-size: 12px;
 }
 
 .chat-panel {
@@ -203,6 +258,7 @@
   .session-panel {
     border-right: 0;
     border-bottom: 1px solid #ddd6ca;
+    min-height: auto;
     padding: 22px;
   }
 
