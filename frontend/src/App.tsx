@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react'
 import './App.css'
 
 type Role = 'user' | 'assistant'
@@ -15,6 +15,13 @@ type ChatResponse = {
   assistant: ChatMessage
 }
 
+type LearningNote = {
+  id: number
+  category: string
+  content: string
+  created_at: string
+}
+
 type TutorSession = {
   id: number
   title: string
@@ -29,12 +36,18 @@ function App() {
   const [sessionId, setSessionId] = useState<number | null>(null)
   const [sessions, setSessions] = useState<TutorSession[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [learningNotes, setLearningNotes] = useState<LearningNote[]>([])
   const [message, setMessage] = useState('')
   const [level, setLevel] = useState('beginner')
   const [mode, setMode] = useState('conversation')
   const [isSending, setIsSending] = useState(false)
   const [isLoadingSession, setIsLoadingSession] = useState(true)
   const [error, setError] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isLoadingSession])
 
   useEffect(() => {
     const storedSessionId = window.localStorage.getItem(storedSessionKey)
@@ -62,6 +75,7 @@ function App() {
         const savedMessages = (await response.json()) as ChatMessage[]
         setSessionId(parsedSessionId)
         setMessages(savedMessages)
+        loadLearningNotes(parsedSessionId)
       } catch (err) {
         window.localStorage.removeItem(storedSessionKey)
         setError(err instanceof Error ? err.message : 'Saved session could not be loaded.')
@@ -113,6 +127,7 @@ function App() {
       setMessages(savedMessages)
       setMessage('')
       window.localStorage.setItem(storedSessionKey, String(selectedSessionId))
+      loadLearningNotes(selectedSessionId)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Session could not be loaded.')
     } finally {
@@ -166,6 +181,7 @@ function App() {
         data.assistant,
       ])
       loadSessions()
+      loadLearningNotes(data.session_id)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
@@ -177,8 +193,31 @@ function App() {
     window.localStorage.removeItem(storedSessionKey)
     setSessionId(null)
     setMessages([])
+    setLearningNotes([])
     setMessage('')
     setError('')
+  }
+
+  async function loadLearningNotes(selectedSessionId: number) {
+    try {
+      const response = await fetch(`/learning-notes/${selectedSessionId}`)
+
+      if (!response.ok) {
+        throw new Error('Learning notes could not be loaded.')
+      }
+
+      const savedNotes = (await response.json()) as LearningNote[]
+      setLearningNotes(savedNotes)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Learning notes could not be loaded.')
+    }
+  }
+
+  function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      event.currentTarget.form?.requestSubmit()
+    }
   }
 
   function formatSessionDate(createdAt: string) {
@@ -281,7 +320,25 @@ function App() {
                 </article>
               ))
             )}
+            <div ref={messagesEndRef} />
           </div>
+
+          {learningNotes.length > 0 && (
+            <aside className="learning-notes" aria-label="Learning notes">
+              <div className="learning-notes-header">
+                <span>Learning notes</span>
+                <strong>{learningNotes.length}</strong>
+              </div>
+              <div className="learning-note-list">
+                {learningNotes.map((note) => (
+                  <article className="learning-note" key={note.id}>
+                    <span>{note.category}</span>
+                    <p>{note.content}</p>
+                  </article>
+                ))}
+              </div>
+            </aside>
+          )}
 
           {error && <p className="error-message">{error}</p>}
 
@@ -291,6 +348,7 @@ function App() {
               placeholder="What would you like to practice?"
               value={message}
               onChange={(event) => setMessage(event.target.value)}
+              onKeyDown={handleComposerKeyDown}
               rows={3}
             />
             <button type="submit" disabled={isSending || !message.trim()}>

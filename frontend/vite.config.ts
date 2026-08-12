@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/chat': 'http://localhost:8000',
+      '/learning-notes': 'http://localhost:8000',
       '/messages': 'http://localhost:8000',
       '/sessions': 'http://localhost:8000',
     },

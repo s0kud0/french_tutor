@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
 from core.database import engine
-from models.chat import Session, Message
+from models.chat import LearningNote, Message, Session
 
 
 def init_db(retries: int = 10, delay: float = 2.0):
@@ -30,6 +30,28 @@ def _upgrade_existing_tables():
                 """
                 ALTER TABLE "session"
                 ADD COLUMN IF NOT EXISTS title VARCHAR NOT NULL DEFAULT 'New practice'
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS learningnote (
+                    id SERIAL NOT NULL,
+                    session_id INTEGER NOT NULL,
+                    category VARCHAR NOT NULL,
+                    content VARCHAR NOT NULL,
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                    PRIMARY KEY (id)
+                )
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                CREATE INDEX IF NOT EXISTS ix_learningnote_session_id
+                ON learningnote (session_id)
                 """
             )
         )

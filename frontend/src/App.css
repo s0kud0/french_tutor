@@ -208,6 +208,49 @@
   white-space: pre-wrap;
 }
 
+.learning-notes {
+  border-top: 1px solid #ddd6ca;
+  background: #fffdf8;
+  padding: 14px 32px;
+}
+
+.learning-notes-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #5b6675;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.learning-note-list {
+  display: grid;
+  gap: 8px;
+}
+
+.learning-note {
+  border: 1px solid #e1d8cb;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.learning-note span {
+  display: block;
+  margin-bottom: 4px;
+  color: #6f4f28;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.learning-note p {
+  margin: 0;
+}
+
 .error-message {
   margin: 0 32px 16px;
   border: 1px solid #f0b7b7;
@@ -273,6 +316,10 @@
   .message-list {
     min-height: 420px;
     padding: 20px;
+  }
+
+  .learning-notes {
+    padding: 14px 20px;
   }
 
   .composer {

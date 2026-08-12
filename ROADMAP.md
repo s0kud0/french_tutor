@@ -11,6 +11,8 @@
 -   [x] Session list/sidebar
 -   [x] Auto-generated session titles
 -   [x] Mode-specific tutor behavior
+-   [x] Auto-scroll and Enter-to-send
+-   [x] Learning notes foundation
 
 ## Phase 2
 

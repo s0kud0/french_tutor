@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlmodel import Session as DBSession, select
 
-from models.chat import Message, Session as ChatSession
+from models.chat import LearningNote, Message, Session as ChatSession
 from services.ai.base import AIProvider
 from services.tutor.prompts import build_tutor_prompt
 
@@ -47,6 +47,7 @@ def handle_tutor_chat(
     db.add(assistant_message)
     db.commit()
     db.refresh(assistant_message)
+    _save_learning_notes(db, chat_session.id, reply)
 
     return {
         "session_id": chat_session.id,
@@ -114,3 +115,40 @@ def _build_session_title(message: str, mode: str) -> str:
         title_text = f"{title_text}..."
 
     return title_text[:60]
+
+
+def _save_learning_notes(db: DBSession, session_id: int, assistant_reply: str):
+    notes = _extract_learning_notes(assistant_reply)
+    for note in notes:
+        db.add(
+            LearningNote(
+                session_id=session_id,
+                category=note["category"],
+                content=note["content"],
+            )
+        )
+
+    if notes:
+        db.commit()
+
+
+def _extract_learning_notes(assistant_reply: str) -> list[dict[str, str]]:
+    notes = []
+    for line in assistant_reply.splitlines():
+        content = line.strip(" -*")
+        lowered = content.lower()
+
+        if not content or len(content) < 12:
+            continue
+
+        if any(keyword in lowered for keyword in ["correction", "corrected", "natural"]):
+            notes.append({"category": "Correction", "content": content})
+        elif any(keyword in lowered for keyword in ["vocabulary", "phrase", "expression"]):
+            notes.append({"category": "Vocabulary", "content": content})
+        elif any(keyword in lowered for keyword in ["grammar", "tense", "conjugat"]):
+            notes.append({"category": "Grammar", "content": content})
+
+        if len(notes) >= 3:
+            break
+
+    return notes
