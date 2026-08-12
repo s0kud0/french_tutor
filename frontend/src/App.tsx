@@ -17,6 +17,7 @@ type ChatResponse = {
 
 type TutorSession = {
   id: number
+  title: string
   created_at: string
 }
 
@@ -247,8 +248,10 @@ function App() {
                   type="button"
                   onClick={() => loadSession(tutorSession.id)}
                 >
-                  <span>Session {tutorSession.id}</span>
-                  <small>{formatSessionDate(tutorSession.created_at)}</small>
+                  <span>{tutorSession.title || `Session ${tutorSession.id}`}</span>
+                  <small>
+                    Session {tutorSession.id} · {formatSessionDate(tutorSession.created_at)}
+                  </small>
                 </button>
               ))
             )}

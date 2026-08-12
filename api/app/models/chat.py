@@ -5,6 +5,7 @@ from datetime import datetime
 
 class Session(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field(default="New practice")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 

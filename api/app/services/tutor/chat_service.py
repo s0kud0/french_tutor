@@ -16,6 +16,11 @@ def handle_tutor_chat(
 ) -> dict:
     chat_session = _get_or_create_session(db, session_id)
     history = _get_recent_messages(db, chat_session.id)
+    if not history and chat_session.title == "New practice":
+        chat_session.title = _build_session_title(message, mode)
+        db.add(chat_session)
+        db.commit()
+        db.refresh(chat_session)
 
     user_message = Message(
         session_id=chat_session.id,
@@ -81,3 +86,31 @@ def _get_recent_messages(
     )
     messages = db.exec(statement).all()
     return list(reversed(messages))
+
+
+def _build_session_title(message: str, mode: str) -> str:
+    normalized_message = message.lower()
+    for phrase in [
+        "i want to practice ",
+        "i would like to practice ",
+        "let's practice ",
+        "lets practice ",
+        "practice ",
+    ]:
+        if normalized_message.startswith(phrase):
+            message = message[len(phrase):]
+            break
+
+    words = [
+        word.strip(".,!?;:()[]{}\"'")
+        for word in message.split()
+        if word.strip(".,!?;:()[]{}\"'")
+    ]
+    title_text = " ".join(words[:5])
+    if not title_text:
+        title_text = mode.capitalize()
+
+    if len(words) > 5:
+        title_text = f"{title_text}..."
+
+    return title_text[:60]

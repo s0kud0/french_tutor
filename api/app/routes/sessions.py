@@ -18,7 +18,7 @@ def create_session(session: DBSession = Depends(get_session)):
 
 @router.get("")
 def list_sessions(session: DBSession = Depends(get_session)):
-    result = session.exec(select(Session)).all()
+    result = session.exec(select(Session).order_by(Session.created_at.desc())).all()
     return result
 
 
