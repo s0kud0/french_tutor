@@ -3,7 +3,10 @@ FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# The checked-in lint tooling has a peer-version mismatch. It is not part of
+# the browser bundle, but Vite is a development dependency required to build
+# that bundle, so install the locked tree with npm's legacy peer resolution.
+RUN npm ci --legacy-peer-deps
 
 COPY . ./
 RUN npm run build
