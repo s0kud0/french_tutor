@@ -1,7 +1,7 @@
 # French Tutor
 
-A Docker-first FastAPI backend for an AI-powered French tutoring
-platform.
+A Docker-first French tutoring platform with a React chat interface and
+FastAPI backend.
 
 ## Goals
 
@@ -16,6 +16,14 @@ platform.
 docker compose up --build
 ```
 
-Visit: - http://localhost:8000/docs - http://localhost:8000/health
+Visit:
+
+- http://localhost/ for the chat application
+- http://localhost/docs for the FastAPI documentation
+- http://localhost/health for the health check
+
+In the homelab deployment, use http://french-tutor/ instead. Docker Compose
+publishes only the web container on port 80; PostgreSQL, Redis, and FastAPI
+remain on the internal Compose network.
 
 See DEVELOPMENT.md for developer workflow.

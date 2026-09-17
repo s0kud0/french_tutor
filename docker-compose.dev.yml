@@ -1,0 +1,6 @@
+# Local-development overlay. It is deliberately not used by Ansible or the
+# homelab deployment, where the API remains private behind the web container.
+services:
+  api:
+    ports:
+      - "8000:8000"

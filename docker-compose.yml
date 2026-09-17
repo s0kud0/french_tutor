@@ -8,8 +8,6 @@ services:
       POSTGRES_USER: tutor
       POSTGRES_PASSWORD: tutorpass
       POSTGRES_DB: tutor
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -21,8 +19,6 @@ services:
   redis:
     image: redis:7
     container_name: french-tutor-redis
-    ports:
-      - "6379:6379"
 
   api:
     build:
@@ -30,17 +26,21 @@ services:
     container_name: french-tutor-api
     env_file:
       - ./api/.env
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./api/app:/app
-    working_dir: /app
     environment:
-      - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+    container_name: french-tutor-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
 
 volumes:
   pgdata:
